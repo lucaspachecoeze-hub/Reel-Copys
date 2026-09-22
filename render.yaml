@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: reel-copy-app
+    runtime: docker
+    dockerfilePath: ./backend/Dockerfile
+    dockerContext: ./backend
+    plan: free
+    envVars:
+      - key: GROQ_API_KEY
+        sync: false
