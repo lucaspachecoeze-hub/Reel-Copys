@@ -27,6 +27,39 @@
     color: #f2f2f2;
     font-size: 1rem;
   }
+  input[type="file"] {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px dashed #444;
+    background: #1a1a1f;
+    color: #c8c8cf;
+    font-size: 0.9rem;
+  }
+  .tabs {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .tab {
+    flex: 1;
+    padding: 10px;
+    text-align: center;
+    border-radius: 10px;
+    border: 1px solid #333;
+    background: #1a1a1f;
+    color: #9a9aa2;
+    cursor: pointer;
+    font-size: 0.9rem;
+  }
+  .tab.active {
+    background: #6c5ce7;
+    color: white;
+    border-color: #6c5ce7;
+  }
+  .panel { display: none; }
+  .panel.active { display: block; }
   button {
     margin-top: 20px;
     width: 100%;
@@ -66,10 +99,22 @@
 </head>
 <body>
   <h1>Reel Copy Generator</h1>
-  <p class="sub">Pegá el link de un video (Drive, YouTube, o cualquier link directo) y generá el copy para Instagram.</p>
+  <p class="sub">Pegá un link o subí un video y generá el copy para Instagram.</p>
 
-  <label for="url">Link del video</label>
-  <input type="text" id="url" placeholder="https://drive.google.com/...">
+  <div class="tabs">
+    <div class="tab active" id="tabLink">Link</div>
+    <div class="tab" id="tabUpload">Subir archivo</div>
+  </div>
+
+  <div class="panel active" id="panelLink">
+    <label for="url">Link del video</label>
+    <input type="text" id="url" placeholder="https://drive.google.com/...">
+  </div>
+
+  <div class="panel" id="panelUpload">
+    <label for="file">Archivo de video</label>
+    <input type="file" id="file" accept="video/*">
+  </div>
 
   <label for="tone">Tono</label>
   <select id="tone">
@@ -87,32 +132,79 @@
   <button class="copy-btn" id="copyBtn" style="display:none;">Copiar</button>
 
 <script>
+const tabLink = document.getElementById('tabLink');
+const tabUpload = document.getElementById('tabUpload');
+const panelLink = document.getElementById('panelLink');
+const panelUpload = document.getElementById('panelUpload');
 const submitBtn = document.getElementById('submit');
 const statusEl = document.getElementById('status');
 const resultEl = document.getElementById('result');
 const copyBtn = document.getElementById('copyBtn');
 
+let mode = 'link';
+
+tabLink.addEventListener('click', () => {
+  mode = 'link';
+  tabLink.classList.add('active');
+  tabUpload.classList.remove('active');
+  panelLink.classList.add('active');
+  panelUpload.classList.remove('active');
+});
+
+tabUpload.addEventListener('click', () => {
+  mode = 'upload';
+  tabUpload.classList.add('active');
+  tabLink.classList.remove('active');
+  panelUpload.classList.add('active');
+  panelLink.classList.remove('active');
+});
+
 submitBtn.addEventListener('click', async () => {
-  const url = document.getElementById('url').value.trim();
   const tone = document.getElementById('tone').value;
-  if (!url) {
-    statusEl.textContent = 'Pegá un link primero.';
-    statusEl.className = 'status visible error';
-    return;
+
+  let fetchOptions;
+  if (mode === 'link') {
+    const url = document.getElementById('url').value.trim();
+    if (!url) {
+      statusEl.textContent = 'Pegá un link primero.';
+      statusEl.className = 'status visible error';
+      return;
+    }
+    fetchOptions = {
+      url: '/api/generate',
+      init: {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, tone })
+      }
+    };
+  } else {
+    const fileInput = document.getElementById('file');
+    const file = fileInput.files[0];
+    if (!file) {
+      statusEl.textContent = 'Elegí un archivo de video primero.';
+      statusEl.className = 'status visible error';
+      return;
+    }
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('tone', tone);
+    fetchOptions = {
+      url: '/api/generate-upload',
+      init: { method: 'POST', body: formData }
+    };
   }
 
   submitBtn.disabled = true;
   resultEl.className = 'result';
   copyBtn.style.display = 'none';
-  statusEl.textContent = 'Descargando y transcribiendo el video... puede tardar un minuto.';
+  statusEl.textContent = mode === 'link'
+    ? 'Descargando y transcribiendo el video... puede tardar un minuto.'
+    : 'Subiendo y transcribiendo el video... puede tardar un minuto.';
   statusEl.className = 'status visible';
 
   try {
-    const res = await fetch('/api/generate', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ url, tone })
-    });
+    const res = await fetch(fetchOptions.url, fetchOptions.init);
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Error desconocido');
 
