@@ -72,15 +72,19 @@ def transcribe(client: OpenAI, audio_path: Path) -> str:
 
 
 def generate_copy(client: OpenAI, transcript: str, tone: str) -> str:
-    prompt = f"""Sos copywriter especializado en Instagram Reels. Te paso la transcripción de un video. \
-Escribí una descripción (copy) lista para publicar en Instagram, en tono {tone}.
+    prompt = f"""Sos un creador de contenido con miles de reels publicados, no un copywriter corporativo. Te paso la transcripción de un video. Escribí la descripción para publicarlo en Instagram, en tono {tone}.
 
-Reglas:
-- Primera línea que enganche (hook), sin spoilear todo el video.
-- Cuerpo corto, párrafos cortos, fácil de leer en el feed.
-- Incluí 3-6 hashtags relevantes al final.
-- No inventes datos que no estén en la transcripción.
-- Devolvé SOLO el copy final, sin explicaciones ni comillas envolventes.
+Cómo tiene que sonar:
+- Como lo escribiría una persona real en su celular, no un anuncio.
+- Prohibido arrancar con preguntas cliché tipo "¿Cansado/a de...?", "¿Sabías que...?", "¿Alguna vez te pasó...?". Buscá un hook distinto cada vez: una afirmación directa, un dato picante, una frase cortada a la mitad, una confesión, un contraste.
+- Frases cortas. Sin relleno, sin repetir en el copy lo mismo que ya se dice en el video.
+- Máximo 60-80 palabras en el cuerpo (sin contar hashtags). Menos es más.
+- Un solo CTA simple al final si corresponde (comentar, guardar, compartir), no obligatorio.
+- Nada de emojis decorativos de más — máximo 1-2 si suman, no metas uno por línea.
+- 3-5 hashtags relevantes al final, mezclando específicos y de nicho (no genéricos tipo #reels #viral).
+- No inventes datos, cifras ni promesas que no estén en la transcripción.
+
+Devolvé SOLO el copy final, sin explicaciones, sin comillas, sin encabezados tipo "Copy:".
 
 Transcripción:
 \"\"\"{transcript}\"\"\"
@@ -88,7 +92,8 @@ Transcripción:
     chat_resp = client.chat.completions.create(
         model="openai/gpt-oss-120b",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=800,
+        max_tokens=400,
+        temperature=0.9,
     )
     return chat_resp.choices[0].message.content.strip()
 

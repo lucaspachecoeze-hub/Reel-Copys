@@ -4,132 +4,262 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reel Copy Generator</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root { color-scheme: light dark; }
-  body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-    max-width: 640px;
-    margin: 0 auto;
-    padding: 24px 16px 64px;
-    background: #0f0f12;
-    color: #f2f2f2;
+  :root {
+    --accent: #35e08a;
+    --accent-2: #1fae8f;
+    --bg-0: #05130d;
+    --bg-1: #0a1f16;
+    --panel: rgba(255,255,255,0.045);
+    --panel-border: rgba(255,255,255,0.08);
+    --text: #eef7f1;
+    --text-dim: #93a89c;
   }
-  h1 { font-size: 1.4rem; margin-bottom: 4px; }
-  p.sub { color: #9a9aa2; margin-top: 0; margin-bottom: 24px; }
-  label { display: block; font-size: 0.85rem; color: #c8c8cf; margin-bottom: 6px; margin-top: 16px; }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body {
+    margin: 0;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    color: var(--text);
+    background:
+      radial-gradient(1100px 700px at 15% -10%, rgba(53,224,138,0.20), transparent 60%),
+      radial-gradient(900px 600px at 110% 10%, rgba(31,174,143,0.18), transparent 55%),
+      linear-gradient(180deg, var(--bg-0), #030a06 70%);
+    min-height: 100vh;
+    padding: 40px 16px 80px;
+  }
+  .wrap { max-width: 680px; margin: 0 auto; }
+
+  .brand { display: flex; align-items: center; gap: 12px; margin-bottom: 28px; }
+  .brand-icon {
+    width: 40px; height: 40px; border-radius: 12px;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 24px rgba(53,224,138,0.45);
+    font-size: 1.1rem;
+  }
+  .brand h1 { font-size: 1.15rem; margin: 0; font-weight: 700; letter-spacing: -0.01em; }
+  .brand p { margin: 2px 0 0; font-size: 0.82rem; color: var(--text-dim); }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--panel-border);
+    border-radius: 20px;
+    padding: 24px;
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+  }
+  .card + .card { margin-top: 18px; }
+
+  label {
+    display: block;
+    font-size: 0.78rem;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    text-transform: uppercase;
+    color: var(--text-dim);
+    margin-bottom: 10px;
+    margin-top: 20px;
+  }
+  label:first-of-type { margin-top: 0; }
+
   input[type="text"], select {
     width: 100%;
-    box-sizing: border-box;
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px solid #333;
-    background: #1a1a1f;
-    color: #f2f2f2;
-    font-size: 1rem;
+    padding: 13px 15px;
+    border-radius: 13px;
+    border: 1px solid var(--panel-border);
+    background: rgba(0,0,0,0.28);
+    color: var(--text);
+    font-size: 0.95rem;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.15s;
   }
-  input[type="file"] {
-    width: 100%;
-    box-sizing: border-box;
-    padding: 12px 14px;
-    border-radius: 10px;
-    border: 1px dashed #444;
-    background: #1a1a1f;
-    color: #c8c8cf;
+  input[type="text"]:focus, select:focus { border-color: var(--accent); }
+  input[type="text"]::placeholder { color: #5c6f65; }
+
+  select {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%2393a89c' stroke-width='1.5' fill='none' fill-rule='evenodd'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 16px center;
+    padding-right: 40px;
+  }
+
+  .file-drop {
+    display: flex; align-items: center; gap: 10px;
+    border: 1px dashed var(--panel-border);
+    border-radius: 13px;
+    padding: 13px 15px;
+    background: rgba(0,0,0,0.2);
+    cursor: pointer;
     font-size: 0.9rem;
+    color: var(--text-dim);
   }
+  .file-drop:hover { border-color: var(--accent); }
+  .file-drop input[type="file"] { display: none; }
+  .file-btn {
+    flex-shrink: 0;
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+  }
+  .file-name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
   .tabs {
     display: flex;
-    gap: 8px;
-    margin-top: 8px;
+    gap: 6px;
+    padding: 4px;
+    background: rgba(0,0,0,0.28);
+    border-radius: 14px;
+    border: 1px solid var(--panel-border);
   }
   .tab {
     flex: 1;
     padding: 10px;
     text-align: center;
     border-radius: 10px;
-    border: 1px solid #333;
-    background: #1a1a1f;
-    color: #9a9aa2;
+    color: var(--text-dim);
     cursor: pointer;
-    font-size: 0.9rem;
+    font-size: 0.88rem;
+    font-weight: 600;
+    transition: all 0.15s;
   }
   .tab.active {
-    background: #6c5ce7;
-    color: white;
-    border-color: #6c5ce7;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #04150d;
+    box-shadow: 0 4px 16px rgba(53,224,138,0.35);
   }
   .panel { display: none; }
   .panel.active { display: block; }
-  button {
-    margin-top: 20px;
+
+  button.submit {
+    margin-top: 22px;
     width: 100%;
-    padding: 14px;
-    border-radius: 10px;
+    padding: 15px;
+    border-radius: 13px;
     border: none;
-    background: #6c5ce7;
-    color: white;
-    font-size: 1rem;
+    background: linear-gradient(135deg, var(--accent), var(--accent-2));
+    color: #04150d;
+    font-size: 0.95rem;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    box-shadow: 0 10px 30px rgba(53,224,138,0.3);
+    transition: transform 0.12s, box-shadow 0.12s;
+  }
+  button.submit:hover { transform: translateY(-1px); box-shadow: 0 14px 36px rgba(53,224,138,0.4); }
+  button.submit:disabled { opacity: 0.45; cursor: not-allowed; transform: none; box-shadow: none; }
+
+  .status {
+    margin-top: 16px;
+    font-size: 0.85rem;
+    color: var(--text-dim);
+    display: none;
+    align-items: center;
+    gap: 8px;
+  }
+  .status.visible { display: flex; }
+  .status.error { color: #ff8a8a; }
+  .spinner {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 2px solid rgba(255,255,255,0.2);
+    border-top-color: var(--accent);
+    animation: spin 0.7s linear infinite;
+    flex-shrink: 0;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .result-card { display: none; }
+  .result-card.visible { display: block; }
+  .result-head {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 14px;
+  }
+  .result-head span {
+    font-size: 0.78rem; font-weight: 700; letter-spacing: 0.04em;
+    text-transform: uppercase; color: var(--accent);
+  }
+  .copy-btn {
+    background: rgba(255,255,255,0.08);
+    color: var(--text);
+    border: 1px solid var(--panel-border);
+    padding: 7px 14px;
+    border-radius: 9px;
+    font-size: 0.78rem;
     font-weight: 600;
+    font-family: inherit;
     cursor: pointer;
   }
-  button:disabled { opacity: 0.5; cursor: not-allowed; }
-  .result {
-    margin-top: 28px;
-    padding: 16px;
-    border-radius: 10px;
-    background: #1a1a1f;
-    border: 1px solid #2a2a30;
+  .copy-btn:hover { background: rgba(255,255,255,0.14); }
+  .result-text {
     white-space: pre-wrap;
-    font-size: 0.95rem;
-    line-height: 1.5;
-    display: none;
+    font-size: 0.94rem;
+    line-height: 1.65;
+    color: #dcece3;
   }
-  .result.visible { display: block; }
-  .copy-btn {
-    margin-top: 12px;
-    width: auto;
-    padding: 8px 14px;
-    font-size: 0.85rem;
-    background: #2a2a30;
-  }
-  .status { margin-top: 16px; font-size: 0.9rem; color: #9a9aa2; display: none; }
-  .status.visible { display: block; }
-  .error { color: #ff6b6b; }
 </style>
 </head>
 <body>
-  <h1>Reel Copy Generator</h1>
-  <p class="sub">Pegá un link o subí un video y generá el copy para Instagram.</p>
+  <div class="wrap">
+    <div class="brand">
+      <div class="brand-icon">🎬</div>
+      <div>
+        <h1>Reel Copy Generator</h1>
+        <p>Pegá un link o subí un video y generá el copy para Instagram</p>
+      </div>
+    </div>
 
-  <div class="tabs">
-    <div class="tab active" id="tabLink">Link</div>
-    <div class="tab" id="tabUpload">Subir archivo</div>
+    <div class="card">
+      <div class="tabs">
+        <div class="tab active" id="tabLink">Link</div>
+        <div class="tab" id="tabUpload">Subir archivo</div>
+      </div>
+
+      <div class="panel active" id="panelLink">
+        <label for="url">Link del video</label>
+        <input type="text" id="url" placeholder="https://drive.google.com/...">
+      </div>
+
+      <div class="panel" id="panelUpload">
+        <label for="file">Archivo de video</label>
+        <div class="file-drop" id="fileDrop">
+          <span class="file-btn">Elegir archivo</span>
+          <span class="file-name" id="fileName">Sin archivo seleccionado</span>
+          <input type="file" id="file" accept="video/*">
+        </div>
+      </div>
+
+      <label for="tone">Tono</label>
+      <select id="tone">
+        <option value="casual y directo">Casual y directo</option>
+        <option value="motivacional">Motivacional</option>
+        <option value="divertido y con humor">Divertido / con humor</option>
+        <option value="profesional y educativo">Profesional / educativo</option>
+        <option value="storytelling emocional">Storytelling emocional</option>
+      </select>
+
+      <button class="submit" id="submit">Generar copy</button>
+      <div class="status" id="status"><div class="spinner"></div><span id="statusText"></span></div>
+    </div>
+
+    <div class="card result-card" id="resultCard">
+      <div class="result-head">
+        <span>Copy generado</span>
+        <button class="copy-btn" id="copyBtn">Copiar</button>
+      </div>
+      <div class="result-text" id="result"></div>
+    </div>
   </div>
-
-  <div class="panel active" id="panelLink">
-    <label for="url">Link del video</label>
-    <input type="text" id="url" placeholder="https://drive.google.com/...">
-  </div>
-
-  <div class="panel" id="panelUpload">
-    <label for="file">Archivo de video</label>
-    <input type="file" id="file" accept="video/*">
-  </div>
-
-  <label for="tone">Tono</label>
-  <select id="tone">
-    <option value="casual y directo">Casual y directo</option>
-    <option value="motivacional">Motivacional</option>
-    <option value="divertido y con humor">Divertido / con humor</option>
-    <option value="profesional y educativo">Profesional / educativo</option>
-    <option value="storytelling emocional">Storytelling emocional</option>
-  </select>
-
-  <button id="submit">Generar copy</button>
-
-  <div class="status" id="status"></div>
-  <div class="result" id="result"></div>
-  <button class="copy-btn" id="copyBtn" style="display:none;">Copiar</button>
 
 <script>
 const tabLink = document.getElementById('tabLink');
@@ -138,8 +268,13 @@ const panelLink = document.getElementById('panelLink');
 const panelUpload = document.getElementById('panelUpload');
 const submitBtn = document.getElementById('submit');
 const statusEl = document.getElementById('status');
+const statusText = document.getElementById('statusText');
+const resultCard = document.getElementById('resultCard');
 const resultEl = document.getElementById('result');
 const copyBtn = document.getElementById('copyBtn');
+const fileInput = document.getElementById('file');
+const fileDrop = document.getElementById('fileDrop');
+const fileName = document.getElementById('fileName');
 
 let mode = 'link';
 
@@ -159,62 +294,56 @@ tabUpload.addEventListener('click', () => {
   panelLink.classList.remove('active');
 });
 
+fileDrop.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => {
+  fileName.textContent = fileInput.files[0] ? fileInput.files[0].name : 'Sin archivo seleccionado';
+});
+
+function setStatus(text, isError) {
+  statusText.textContent = text;
+  statusEl.className = 'status visible' + (isError ? ' error' : '');
+  statusEl.querySelector('.spinner').style.display = isError ? 'none' : 'block';
+}
+
 submitBtn.addEventListener('click', async () => {
   const tone = document.getElementById('tone').value;
 
-  let fetchOptions;
+  let url, init;
   if (mode === 'link') {
-    const url = document.getElementById('url').value.trim();
-    if (!url) {
-      statusEl.textContent = 'Pegá un link primero.';
-      statusEl.className = 'status visible error';
-      return;
-    }
-    fetchOptions = {
-      url: '/api/generate',
-      init: {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url, tone })
-      }
+    const videoUrl = document.getElementById('url').value.trim();
+    if (!videoUrl) { setStatus('Pegá un link primero.', true); return; }
+    url = '/api/generate';
+    init = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ url: videoUrl, tone })
     };
   } else {
-    const fileInput = document.getElementById('file');
     const file = fileInput.files[0];
-    if (!file) {
-      statusEl.textContent = 'Elegí un archivo de video primero.';
-      statusEl.className = 'status visible error';
-      return;
-    }
+    if (!file) { setStatus('Elegí un archivo de video primero.', true); return; }
     const formData = new FormData();
     formData.append('file', file);
     formData.append('tone', tone);
-    fetchOptions = {
-      url: '/api/generate-upload',
-      init: { method: 'POST', body: formData }
-    };
+    url = '/api/generate-upload';
+    init = { method: 'POST', body: formData };
   }
 
   submitBtn.disabled = true;
-  resultEl.className = 'result';
-  copyBtn.style.display = 'none';
-  statusEl.textContent = mode === 'link'
-    ? 'Descargando y transcribiendo el video... puede tardar un minuto.'
-    : 'Subiendo y transcribiendo el video... puede tardar un minuto.';
-  statusEl.className = 'status visible';
+  resultCard.classList.remove('visible');
+  setStatus(mode === 'link'
+    ? 'Descargando y transcribiendo el video...'
+    : 'Subiendo y transcribiendo el video...', false);
 
   try {
-    const res = await fetch(fetchOptions.url, fetchOptions.init);
+    const res = await fetch(url, init);
     const data = await res.json();
     if (!res.ok) throw new Error(data.detail || 'Error desconocido');
 
     resultEl.textContent = data.copy;
-    resultEl.className = 'result visible';
-    copyBtn.style.display = 'inline-block';
+    resultCard.classList.add('visible');
     statusEl.className = 'status';
   } catch (err) {
-    statusEl.textContent = 'Error: ' + err.message;
-    statusEl.className = 'status visible error';
+    setStatus('Error: ' + err.message, true);
   } finally {
     submitBtn.disabled = false;
   }
