@@ -92,10 +92,14 @@ Transcripción:
     chat_resp = client.chat.completions.create(
         model="openai/gpt-oss-120b",
         messages=[{"role": "user", "content": prompt}],
-        max_tokens=400,
+        max_tokens=1200,
         temperature=0.9,
+        reasoning_effort="low",
     )
-    return chat_resp.choices[0].message.content.strip()
+    copy_text = chat_resp.choices[0].message.content.strip()
+    if not copy_text:
+        raise HTTPException(500, "El modelo no devolvió texto. Probá de nuevo.")
+    return copy_text
 
 
 @app.get("/")
